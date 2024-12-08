@@ -33,7 +33,7 @@ func (ie *InventoryEvent) SubscribeSomething() {
 
 	err = ie.Channel.QueueBind(
 		q.Name,             // queue name
-		"monorepo",         // routing key
+		"update.product",   // routing key
 		event.ExchangeName, // exchange
 		false,
 		nil,

@@ -33,7 +33,7 @@ func (te *TransactionEvent) SubscribeSomething() {
 
 	err = te.Channel.QueueBind(
 		q.Name,             // queue name
-		"monorepo",         // routing key
+		"reduce.product",   // routing key
 		event.ExchangeName, // exchange
 		false,
 		nil,
