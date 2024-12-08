@@ -1,6 +1,7 @@
 package product
 
 import (
+	"fmt"
 	"log"
 	"product/pkg/event"
 
@@ -31,9 +32,9 @@ func (pe *ProductEvent) SubscribeSomething() {
 	}
 
 	err = pe.Channel.QueueBind(
-		q.Name,             // queue name
-		"monorepo",         // routing key
-		event.ExchangeName, // exchange
+		q.Name,               // queue name
+		"create.transaction", // routing key
+		event.ExchangeName,   // exchange
 		false,
 		nil,
 	)
@@ -60,6 +61,7 @@ func (pe *ProductEvent) SubscribeSomething() {
 }
 
 func (pe *ProductEvent) handleConsumeSomething(msg amqp.Delivery) {
-	// do something
+	message := string(msg.Body)
 
+	fmt.Printf("Received message from product service: %s\n", message)
 }

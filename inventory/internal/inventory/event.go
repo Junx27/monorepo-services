@@ -56,6 +56,12 @@ func (ie *InventoryEvent) SubscribeSomething() {
 	}
 
 	for msg := range msgs {
-		fmt.Println(msg)
+		ie.handleConsumeSomething(msg)
 	}
+}
+
+func (ie *InventoryEvent) handleConsumeSomething(msg amqp.Delivery) {
+	message := string(msg.Body)
+
+	fmt.Printf("Received message from inventory service: %s\n", message)
 }

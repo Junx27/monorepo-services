@@ -23,14 +23,12 @@ func NewHandler(cfg config.Config, ch *amqp.Channel) Handler {
 }
 
 func (h *Handler) GetTransaction(c *gin.Context) {
-	// Mengambil parameter ID dari URL path
 	id := c.Param("id")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID parameter is required"})
 		return
 	}
 
-	// Mendapatkan data transaksi berdasarkan ID
 	transaction, err := h.GetTransactionFromDB(c, id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -41,7 +39,6 @@ func (h *Handler) GetTransaction(c *gin.Context) {
 		return
 	}
 
-	// Mengembalikan response dengan data transaksi
 	c.JSON(http.StatusOK, transaction)
 }
 
@@ -63,8 +60,7 @@ func (h *Handler) CreateTransaction(c *gin.Context) {
 		return
 	}
 
-	event.Publisher(h.ch, "", []byte(""))
-
+	event.Publisher(h.ch, "create.transaction", []byte("transaction successfully"))
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success creating transaction",
 	})
