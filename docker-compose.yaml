@@ -1,0 +1,117 @@
+services:
+  product:
+    build: product
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_HOST: "postgres_container_product"
+      DB_PORT: "5432"
+      DB_NAME: "product"
+      AMQP_HOST: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - postgres_product
+      - rabbitmq
+    links:
+      - postgres_product
+      - rabbitmq
+    restart: always
+
+  postgres_product:
+    container_name: postgres_container_product
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: product
+    volumes:
+      - pg_data_product:/var/lib/postgresql/data
+    ports:
+      - "6432:5432"
+    restart: always
+
+  inventory:
+    build: inventory
+    ports:
+      - "8001:8001"
+    environment:
+      PORT: "8001"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_HOST: "postgres_container_inventory"
+      DB_PORT: "5432"
+      DB_NAME: "inventory"
+      AMQP_HOST: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - postgres_inventory
+      - rabbitmq
+    links:
+      - postgres_inventory
+      - rabbitmq
+    restart: always
+
+  postgres_inventory:
+    container_name: postgres_container_inventory
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: inventory
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data_inventory:/var/lib/postgresql/data
+    restart: always
+
+  transaction:
+    build: transaction
+    ports:
+      - "8002:8002"
+    environment:
+      PORT: "8002"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "postgres"
+      DB_HOST: "postgres_container_transaction"
+      DB_PORT: "5432"
+      DB_NAME: "transaction"
+      AMQP_HOST: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - postgres_transaction
+      - rabbitmq
+    links:
+      - postgres_transaction
+      - rabbitmq
+    restart: always
+
+  postgres_transaction:
+    container_name: postgres_container_transaction
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: transaction
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg_data_transaction:/var/lib/postgresql/data
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: "rabbitmq-local"
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq
+
+volumes:
+  pg_data_product:
+  pg_data_inventory:
+  pg_data_transaction:
+  rabbitmq_data:
+  rabbitmq_log:
+    driver: local
