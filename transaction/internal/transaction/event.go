@@ -56,6 +56,12 @@ func (te *TransactionEvent) SubscribeSomething() {
 	}
 
 	for msg := range msgs {
-		fmt.Println(msg)
+		te.handleConsumeSomething(msg)
 	}
+}
+
+func (te *TransactionEvent) handleConsumeSomething(msg amqp.Delivery) {
+	message := string(msg.Body)
+
+	fmt.Printf("Received message from transaction service: %s\n", message)
 }
