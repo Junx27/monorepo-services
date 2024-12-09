@@ -98,7 +98,7 @@ func main() {
 	go productEvent.SubscribeSomething()
 
 	// Init Product Router
-	productHandler := product.NewHandler(cfg)
+	productHandler := product.NewHandler(cfg, ch)
 	productRouter := product.NewRouter(productHandler, r.RouterGroup)
 	productRouter.Register()
 

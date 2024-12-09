@@ -70,6 +70,9 @@ func (h *Handler) UpdateTransaction(c *gin.Context) {
 	// update transaction with status: PAID
 	// call service product to reduce the stock by 1
 	// add new item to the user inventory by calling inventory service
-
+	event.Publisher(h.ch, "update.transaction", []byte("transaction update"))
 	// api driven atau event driven
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success update transaction",
+	})
 }
