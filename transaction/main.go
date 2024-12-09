@@ -94,7 +94,7 @@ func main() {
 
 	// Init Event Domain
 	transactionEvent := transaction.NewTransactionEvent(ch)
-	go transactionEvent.SubscribeSomething()
+	go transactionEvent.SubscribeTransaction()
 
 	// Init Router
 	transactionHandler := transaction.NewHandler(cfg, ch)

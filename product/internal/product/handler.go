@@ -3,7 +3,6 @@ package product
 import (
 	"net/http"
 	"product/internal/config"
-	"product/pkg/event"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -22,6 +21,7 @@ func NewHandler(cfg config.Config, ch *amqp.Channel) Handler {
 	}
 }
 
+// GetProductHandler to fetch a product by ID
 func (h *Handler) GetProductHandler(c *gin.Context) {
 	productID := c.Param("id")
 	product, err := GetProduct(c.Request.Context(), productID)
@@ -43,20 +43,59 @@ func (h *Handler) GetProductHandler(c *gin.Context) {
 	})
 }
 
+// UpdateProductHandler to update product details
 func (h *Handler) UpdateProduct(c *gin.Context) {
-	event.Publisher(h.ch, "update.product", []byte("product update"))
-	// api driven atau event driven
-	c.JSON(http.StatusOK, gin.H{
-		"message": "success update product",
-	})
+	var req Product
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "invalid request body",
+		})
+		return
+	}
 
+	err := UpdateProduct(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "product updated successfully",
+	})
 }
 
+// ReduceStockHandler to reduce stock of a product
 func (h *Handler) ReduceStock(c *gin.Context) {
-	event.Publisher(h.ch, "reduce.product", []byte("product reduce"))
-	// api driven atau event driven
-	c.JSON(http.StatusOK, gin.H{
-		"message": "success reduce product",
-	})
+	productID := c.Param("id")
 
+	err := ReduceStock(c.Request.Context(), productID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to reduce stock",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "product stock reduced by 1",
+	})
+}
+
+// IncreaseStockHandler to increase stock of a product
+func (h *Handler) IncreaseStock(c *gin.Context) {
+	productID := c.Param("id")
+
+	err := IncreaseStock(c.Request.Context(), productID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to increase stock",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "product stock increased by 1",
+	})
 }

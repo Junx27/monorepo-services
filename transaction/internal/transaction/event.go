@@ -18,23 +18,23 @@ func NewTransactionEvent(ch *amqp.Channel) TransactionEvent {
 	}
 }
 
-func (te *TransactionEvent) SubscribeSomething() {
+func (te *TransactionEvent) SubscribeTransaction() {
 	q, err := te.Channel.QueueDeclare(
-		"something", // random queue name
-		true,        // durable
-		false,       // delete when unused
-		false,       // exclusive
-		false,       // no-wait
-		nil,         // arguments
+		"create_transaction_cancel", // random queue name
+		true,                        // durable
+		false,                       // delete when unused
+		false,                       // exclusive
+		false,                       // no-wait
+		nil,                         // arguments
 	)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 
 	err = te.Channel.QueueBind(
-		q.Name,             // queue name
-		"reduce.product",   // routing key
-		event.ExchangeName, // exchange
+		q.Name,                      // queue name
+		"create_transaction_cancel", // routing key
+		event.ExchangeName,          // exchange
 		false,
 		nil,
 	)

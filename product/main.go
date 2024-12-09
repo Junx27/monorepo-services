@@ -95,7 +95,8 @@ func main() {
 
 	// Init Event Domain
 	productEvent := product.NewProductEvent(ch)
-	go productEvent.SubscribeSomething()
+	go productEvent.SubscribeReduceStock()
+	go productEvent.SubscribeIncreaseStock()
 
 	// Init Product Router
 	productHandler := product.NewHandler(cfg, ch)

@@ -17,5 +17,6 @@ func NewRouter(handler Handler, group gin.RouterGroup) Router {
 func (r *Router) Register() {
 	r.group.GET("/transaction/:id", r.handler.GetTransaction)
 	r.group.POST("/transaction", r.handler.CreateTransaction)
-	r.group.PUT("/transaction/:id", r.handler.UpdateTransaction)
+	r.group.PUT("/transaction/:id/paid", r.handler.UpdateTransactionPaid)
+	r.group.PUT("/transaction/:id/cancel", r.handler.UpdateTransactionCancel)
 }

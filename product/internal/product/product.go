@@ -73,8 +73,41 @@ func UpdateProduct(ctx context.Context, product Product) error {
 	query := "UPDATE products SET name=@name, price=@price, stock=@stock WHERE id = @id"
 	args := pgx.NamedArgs{
 		"id":    product.ID,
+		"name":  product.Name,
 		"price": product.Price,
 		"stock": product.Stock,
+	}
+
+	_, err := database.DB.Exec(ctx, query, args)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func IncreaseStock(ctx context.Context, productID string) error {
+	// Increase stock by 1
+	query := "UPDATE products SET stock = stock + 1 WHERE id = @id"
+	args := pgx.NamedArgs{
+		"id": productID,
+	}
+
+	_, err := database.DB.Exec(ctx, query, args)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func ReduceStock(ctx context.Context, productID string) error {
+	// Reduce stock by 1
+	query := "UPDATE products SET stock = stock - 1 WHERE id = @id AND stock > 0"
+	args := pgx.NamedArgs{
+		"id": productID,
 	}
 
 	_, err := database.DB.Exec(ctx, query, args)
