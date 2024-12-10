@@ -13,15 +13,17 @@ type Transaction struct {
 	UUID      string    `json:"id" db:"uuid"`
 	Status    string    `json:"status" db:"status"`
 	UserID    string    `json:"userId" db:"user_id"`
+	ProductID string    `json:"productId" db:"product_id"`
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
 }
 
 func StoreTransaction(ctx context.Context, req Transaction) error {
-	query := "INSERT INTO transactions (status, user_id) VALUES (@status, @user_id)"
+	query := "INSERT INTO transactions (status, user_id, product_id) VALUES (@status, @user_id, @product_id)"
 	args := pgx.NamedArgs{
-		"status":  req.Status,
-		"user_id": req.UserID,
+		"status":     req.Status,
+		"user_id":    req.UserID,
+		"product_id": req.ProductID,
 	}
 
 	_, err := database.DB.Exec(ctx, query, args)
@@ -34,7 +36,7 @@ func StoreTransaction(ctx context.Context, req Transaction) error {
 }
 
 func (h *Handler) GetTransactionFromDB(ctx context.Context, id string) (Transaction, error) {
-	query := `SELECT uuid, status, user_id, created_at, updated_at 
+	query := `SELECT uuid, status, user_id, product_id, created_at, updated_at 
               FROM transactions 
               WHERE uuid = @id`
 	args := pgx.NamedArgs{
@@ -50,7 +52,7 @@ func (h *Handler) GetTransactionFromDB(ctx context.Context, id string) (Transact
 
 	transaction, err := pgx.CollectOneRow(rows, func(row pgx.CollectableRow) (Transaction, error) {
 		var t Transaction
-		err := row.Scan(&t.UUID, &t.Status, &t.UserID, &t.CreatedAt, &t.UpdatedAt)
+		err := row.Scan(&t.UUID, &t.Status, &t.UserID, &t.ProductID, &t.CreatedAt, &t.UpdatedAt)
 		if err != nil {
 			log.Println("Error scanning row:", err)
 			return t, err
@@ -67,4 +69,20 @@ func (h *Handler) GetTransactionFromDB(ctx context.Context, id string) (Transact
 	}
 
 	return transaction, nil
+}
+
+func UpdateTransactionStatus(ctx context.Context, transactionID, status string) error {
+	query := `UPDATE transactions SET status = @status WHERE uuid = @transaction_id`
+	args := pgx.NamedArgs{
+		"status":         status,
+		"transaction_id": transactionID,
+	}
+
+	_, err := database.DB.Exec(ctx, query, args)
+	if err != nil {
+		log.Println("Error updating transaction status:", err)
+		return err
+	}
+
+	return nil
 }
