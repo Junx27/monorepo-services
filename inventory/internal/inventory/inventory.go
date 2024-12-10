@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -20,15 +21,19 @@ type Inventory struct {
 }
 
 type InventoryTransaction struct {
-	UserID        string `json:"userId"`
-	ProductID     string `json:"productId"`
-	TransactionID string `json:"transactionId"`
-	Quantity      int    `json:"quantity"`
+	TransactionID uuid.UUID `json:"transaction_id"`
+	UserID        uuid.UUID `json:"user_id"`
+	ProductID     uuid.UUID `json:"product_id"`
+	Quantity      int       `json:"quantity"`
+}
+type InventoryTransactionInput struct {
+	TransactionID uuid.UUID `json:"transaction_id"`
+	UserID        uuid.UUID `json:"user_id"`
+	ProductID     uuid.UUID `json:"product_id"`
+	Quantity      int       `json:"quantity"`
 }
 
-// CreateInventory creates a new inventory record
 func StoreInventory(ctx context.Context, req Inventory) error {
-	// Query untuk insert data inventory baru, kuantitas selalu dimulai dengan 1
 	query := `INSERT INTO inventories (user_id, product_id, transaction_id, quantity, created_at, updated_at) 
 			  VALUES (@user_id, @product_id, @transaction_id, 1, NOW(), NOW())`
 	args := pgx.NamedArgs{
@@ -37,7 +42,6 @@ func StoreInventory(ctx context.Context, req Inventory) error {
 		"transaction_id": req.TransactionID,
 	}
 
-	// Eksekusi query untuk menyimpan data ke database
 	_, err := database.DB.Exec(ctx, query, args)
 	if err != nil {
 		log.Println("Error inserting inventory:", err)
@@ -47,7 +51,6 @@ func StoreInventory(ctx context.Context, req Inventory) error {
 	return nil
 }
 
-// GetInventory retrieves a single inventory record by its ID
 func GetInventory(ctx context.Context, id string) (Inventory, error) {
 
 	query := `SELECT uuid, user_id, product_id, transaction_id, quantity, created_at, updated_at
@@ -86,9 +89,7 @@ func GetInventory(ctx context.Context, id string) (Inventory, error) {
 	return inventory, nil
 }
 
-// UpdateInventory updates an existing inventory record
 func UpdateInventory(ctx context.Context, id string) error {
-	// Query untuk menambah kuantitas sebanyak 1
 	query := `
 		UPDATE inventories
 		SET quantity = quantity - 1, updated_at = NOW()
@@ -98,7 +99,6 @@ func UpdateInventory(ctx context.Context, id string) error {
 		"id": id,
 	}
 
-	// Execute the query to update the inventory
 	_, err := database.DB.Exec(ctx, query, args)
 	if err != nil {
 		log.Println("Error updating inventory:", err)

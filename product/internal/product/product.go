@@ -88,7 +88,6 @@ func UpdateProduct(ctx context.Context, product Product) error {
 }
 
 func IncreaseStock(ctx context.Context, productID string) error {
-	// Increase stock by 1
 	query := "UPDATE products SET stock = stock + 1 WHERE id = @id"
 	args := pgx.NamedArgs{
 		"id": productID,
@@ -104,7 +103,6 @@ func IncreaseStock(ctx context.Context, productID string) error {
 }
 
 func ReduceStock(ctx context.Context, productID string) error {
-	// Reduce stock by 1
 	query := "UPDATE products SET stock = stock - 1 WHERE id = @id AND stock > 0"
 	args := pgx.NamedArgs{
 		"id": productID,

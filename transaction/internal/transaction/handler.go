@@ -28,7 +28,6 @@ type Product struct {
 	ProductID string `json:"product_id"`
 }
 
-// GetTransaction retrieves a transaction from the database by ID
 func (h *Handler) GetTransaction(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -49,7 +48,6 @@ func (h *Handler) GetTransaction(c *gin.Context) {
 	c.JSON(http.StatusOK, transaction)
 }
 
-// CreateTransaction creates a new transaction
 func (h *Handler) CreateTransaction(c *gin.Context) {
 	var transaction Transaction
 
@@ -69,20 +67,16 @@ func (h *Handler) CreateTransaction(c *gin.Context) {
 		ProductID: transaction.ProductID,
 	}
 
-	// Convert product to JSON
 	productData, err := json.Marshal(product)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Unmarshal error"})
 		return
 	}
 
-	// Send event about the successful creation of the transaction
 	err = event.Publisher(h.ch, "create.transaction.success", productData)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Transaction created successfully"})
 }
-
-// UpdateTransactionStatus is a generic function to update the status of a transaction
 
 func (h *Handler) UpdateTransaction(c *gin.Context, status string) {
 	transactionID := c.Param("id")
@@ -91,7 +85,6 @@ func (h *Handler) UpdateTransaction(c *gin.Context, status string) {
 		return
 	}
 
-	// Step 1: Get transaction details from the database
 	transaction, err := h.GetTransactionFromDB(c, transactionID)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -102,14 +95,12 @@ func (h *Handler) UpdateTransaction(c *gin.Context, status string) {
 		return
 	}
 
-	// Step 2: Update the status of the transaction in the database
 	err = UpdateTransactionStatus(c.Request.Context(), transactionID, status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update transaction status"})
 		return
 	}
 
-	// Step 3: Prepare the event data
 	eventData := struct {
 		TransactionID string `json:"transaction_id"`
 		UserID        string `json:"user_id"`
@@ -122,14 +113,12 @@ func (h *Handler) UpdateTransaction(c *gin.Context, status string) {
 		Quantity:      1,
 	}
 
-	// Convert event data to JSON
 	eventBytes, err := json.Marshal(eventData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to marshal event data"})
 		return
 	}
 
-	// Step 4: Publish the event
 	var eventName string
 	if status == "paid" {
 		eventName = "update.transaction.paid"
@@ -143,18 +132,15 @@ func (h *Handler) UpdateTransaction(c *gin.Context, status string) {
 		return
 	}
 
-	// Step 5: Respond with success
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Transaction status updated to " + status,
 	})
 }
 
-// UpdateTransactionPaid updates the transaction status to "paid"
 func (h *Handler) UpdateTransactionPaid(c *gin.Context) {
 	h.UpdateTransaction(c, "paid")
 }
 
-// UpdateTransactionCancel updates the transaction status to "cancel"
 func (h *Handler) UpdateTransactionCancel(c *gin.Context) {
 	h.UpdateTransaction(c, "cancel")
 }

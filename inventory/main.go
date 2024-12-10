@@ -95,6 +95,7 @@ func main() {
 	// Init Event Domain
 	inventoryEvent := inventory.NewInventoryEvent(ch)
 	go inventoryEvent.SubscribeTransactionPaid()
+	go inventoryEvent.SubscribeProductIncreased()
 
 	// Init Router
 	inventoryHandler := inventory.NewHandler(cfg, ch)

@@ -20,21 +20,21 @@ func NewTransactionEvent(ch *amqp.Channel) TransactionEvent {
 
 func (te *TransactionEvent) SubscribeTransaction() {
 	q, err := te.Channel.QueueDeclare(
-		"create_transaction_cancel", // random queue name
-		true,                        // durable
-		false,                       // delete when unused
-		false,                       // exclusive
-		false,                       // no-wait
-		nil,                         // arguments
+		"transaction_success", // random queue name
+		true,                  // durable
+		false,                 // delete when unused
+		false,                 // exclusive
+		false,                 // no-wait
+		nil,                   // arguments
 	)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 
 	err = te.Channel.QueueBind(
-		q.Name,                      // queue name
-		"create_transaction_cancel", // routing key
-		event.ExchangeName,          // exchange
+		q.Name,                // queue name
+		"transaction.success", // routing key
+		event.ExchangeName,    // exchange
 		false,
 		nil,
 	)
@@ -64,4 +64,5 @@ func (te *TransactionEvent) handleConsumeSomething(msg amqp.Delivery) {
 	message := string(msg.Body)
 
 	fmt.Printf("Received message from transaction service: %s\n", message)
+	fmt.Println("Transaction successfully")
 }

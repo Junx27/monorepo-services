@@ -113,21 +113,17 @@ func (pe *ProductEvent) SubscribeIncreaseStock() {
 }
 
 func (pe *ProductEvent) handleConsumeReduceStock(msg amqp.Delivery) {
-	// Parsing pesan JSON dari RabbitMQ
 	var productTransaction ProductTransaction
 	err := json.Unmarshal(msg.Body, &productTransaction)
 	if err != nil {
 		log.Printf("Error parsing message: %v", err)
 		return
 	}
-
-	// Mengirim HTTP POST request untuk memproses transaksi produk
 
 	pe.reduceStockProduct(productTransaction)
 }
 
 func (pe *ProductEvent) handleConsumeIncreaseStock(msg amqp.Delivery) {
-	// Parsing pesan JSON dari RabbitMQ
 	var productTransaction ProductTransaction
 	err := json.Unmarshal(msg.Body, &productTransaction)
 	if err != nil {
@@ -135,28 +131,21 @@ func (pe *ProductEvent) handleConsumeIncreaseStock(msg amqp.Delivery) {
 		return
 	}
 
-	// Mengirim HTTP POST request untuk memproses transaksi produk
-
 	fmt.Printf("Received message from product service: %s\n", productTransaction)
 	pe.increaseStockProduct(productTransaction)
 }
 
-// Fungsi untuk mengirimkan HTTP PUT request untuk memperbarui stok produk
 func (pe *ProductEvent) increaseStockProduct(productTransaction ProductTransaction) {
-	// Membentuk URL dengan product_id
 	url := fmt.Sprintf("http://localhost:8000/product/%s/increaseStock", productTransaction.ProductID)
 
-	// Menampilkan URL yang digunakan untuk debug
 	fmt.Printf("Sending POST request to: %s\n", url)
 
-	// Menyiapkan body request
 	postBody, err := json.Marshal(productTransaction)
 	if err != nil {
 		log.Printf("Error marshalling request body: %v", err)
 		return
 	}
 
-	// Mengirimkan POST request ke endpoint
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		log.Printf("Error sending HTTP POST request: %v", err)
@@ -164,7 +153,6 @@ func (pe *ProductEvent) increaseStockProduct(productTransaction ProductTransacti
 	}
 	defer resp.Body.Close()
 
-	// Menampilkan status kode response
 	if resp.StatusCode == 200 {
 		fmt.Println("Product stock successfully increase!")
 	} else {
@@ -172,22 +160,17 @@ func (pe *ProductEvent) increaseStockProduct(productTransaction ProductTransacti
 	}
 }
 
-// Fungsi untuk mengirimkan HTTP POST request untuk mengurangi stok produk
 func (pe *ProductEvent) reduceStockProduct(productTransaction ProductTransaction) {
-	// Membentuk URL dengan product_id
 	url := fmt.Sprintf("http://localhost:8000/product/%s/reduceStock", productTransaction.ProductID)
 
-	// Menampilkan URL yang digunakan untuk debug
 	fmt.Printf("Sending POST request to: %s\n", url)
 
-	// Menyiapkan body request
 	postBody, err := json.Marshal(productTransaction)
 	if err != nil {
 		log.Printf("Error marshalling request body: %v", err)
 		return
 	}
 
-	// Mengirimkan POST request ke endpoint
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		log.Printf("Error sending HTTP POST request: %v", err)
@@ -195,7 +178,6 @@ func (pe *ProductEvent) reduceStockProduct(productTransaction ProductTransaction
 	}
 	defer resp.Body.Close()
 
-	// Menampilkan status kode response
 	if resp.StatusCode == 200 {
 		fmt.Println("Product stock successfully reduced!")
 	} else {

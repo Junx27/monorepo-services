@@ -3,6 +3,7 @@ package product
 import (
 	"net/http"
 	"product/internal/config"
+	"product/pkg/event"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -21,7 +22,6 @@ func NewHandler(cfg config.Config, ch *amqp.Channel) Handler {
 	}
 }
 
-// GetProductHandler to fetch a product by ID
 func (h *Handler) GetProductHandler(c *gin.Context) {
 	productID := c.Param("id")
 	product, err := GetProduct(c.Request.Context(), productID)
@@ -43,7 +43,6 @@ func (h *Handler) GetProductHandler(c *gin.Context) {
 	})
 }
 
-// UpdateProductHandler to update product details
 func (h *Handler) UpdateProduct(c *gin.Context) {
 	var req Product
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -66,7 +65,6 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 	})
 }
 
-// ReduceStockHandler to reduce stock of a product
 func (h *Handler) ReduceStock(c *gin.Context) {
 	productID := c.Param("id")
 
@@ -77,13 +75,13 @@ func (h *Handler) ReduceStock(c *gin.Context) {
 		})
 		return
 	}
+	event.Publisher(h.ch, "transaction.success", []byte("update inventory success"))
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "product stock reduced by 1",
 	})
 }
 
-// IncreaseStockHandler to increase stock of a product
 func (h *Handler) IncreaseStock(c *gin.Context) {
 	productID := c.Param("id")
 
@@ -94,6 +92,8 @@ func (h *Handler) IncreaseStock(c *gin.Context) {
 		})
 		return
 	}
+
+	event.Publisher(h.ch, "update.product.increased", []byte("update inventory success"))
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "product stock increased by 1",

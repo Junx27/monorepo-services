@@ -78,7 +78,6 @@ func UpdateTransactionStatus(ctx context.Context, transactionID, status string) 
 		"transaction_id": transactionID,
 	}
 
-	// Execute the query to update the transaction status
 	_, err := database.DB.Exec(ctx, query, args)
 	if err != nil {
 		log.Println("Error updating transaction status:", err)
